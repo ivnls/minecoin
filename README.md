@@ -4,6 +4,8 @@
 
 <p align="center"><b>Seu patrimônio, bloco por bloco.</b> Um app Android de ativos pessoais com a cara do Minecraft.</p>
 
+<p align="center"><img src="docs/screenshots/telas.png" alt="Início, novo registro, inventário e resumo"></p>
+
 O Baú anota contas, gastos, receitas, bens e dívidas e mostra o seu patrimônio líquido, tudo no próprio aparelho, sem
 cadastro e sem internet. A arquitetura segue o [Tally](https://github.com/IamAndelib/Tally-android): uma `WebView`
 sobre arquivos HTML/CSS/JS locais e uma Activity em Java que guarda os dados e cuida do backup. A interface usa as
