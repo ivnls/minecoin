@@ -1,0 +1,39 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'app.bau.ativos'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'app.bau.ativos'
+        minSdk 21
+        targetSdk 34
+        versionCode Integer.parseInt(project.property('bauVersionCode'))
+        versionName project.property('bauVersion')
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix '.dev'
+            versionNameSuffix '-dev'
+        }
+        release {
+            // sem minificação: o app é uma WebView sobre arquivos locais e o R8 poderia remover a ponte com o JS
+            minifyEnabled false
+            // sem chave própria, a versão release sai assinada com a chave de debug (para instalar direto)
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    // as texturas já são PNGs mínimos; não deixe o aapt recomprimir os sons
+    androidResources {
+        noCompress 'ogg'
+    }
+}
