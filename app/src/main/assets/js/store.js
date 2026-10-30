@@ -79,6 +79,8 @@ const Store = (() => {
         sound: true,
         vibrate: true,
         theme: 'overworld',
+        topWood: 'oak',
+        bottomWood: 'oak',
       },
       accounts: [],
       categories: defaultCategories(),

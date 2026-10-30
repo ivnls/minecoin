@@ -37,6 +37,9 @@ const App = (() => {
 
   function render() {
     const screen = document.getElementById('screen');
+    // redesenhar a mesma aba (depois de salvar algo) mantém a rolagem onde estava
+    const keep = screen.dataset.tab === state.tab ? screen.scrollTop : scroll[state.tab] || 0;
+    screen.dataset.tab = Store.data ? state.tab : '';
     const top = document.getElementById('top');
     const bar = document.getElementById('hotbar');
     screen.textContent = '';
@@ -54,7 +57,7 @@ const App = (() => {
     const wrap = h('div.wrap');
     screen.append(wrap);
     Screens[state.tab](wrap, state);
-    screen.scrollTop = scroll[state.tab] || 0;
+    screen.scrollTop = keep;
     drawHotbar();
   }
 
@@ -82,7 +85,9 @@ const App = (() => {
   }
 
   function go(tab, extra) {
-    scroll[state.tab] = document.getElementById('screen').scrollTop;
+    const screen = document.getElementById('screen');
+    scroll[state.tab] = screen.scrollTop;
+    screen.dataset.tab = '';
     if (tab !== state.tab) {
       scroll[tab] = 0;
       if (tab === 'history' && !(extra && 'account' in extra)) state.account = '';
@@ -93,11 +98,31 @@ const App = (() => {
     render();
   }
 
+  const THEME_BARS = { overworld: '#1b1b1b', deep: '#101014', nether: '#1d0606', end: '#120a1c' };
+
+  // tábuas ampliadas 3x e escurecidas para o texto branco continuar legível
+  // (endereço absoluto: dentro de uma variável CSS, url() relativo seria resolvido a partir de css/)
+  const woodBg = wood => 'linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.36)), url("' +
+    new URL('mc/block/' + wood + '_planks.png', document.baseURI).href + '") 0 0 / 48px 48px';
+
+  // cor média da madeira com o mesmo escurecimento, para a barra de status do Android
+  function shade(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v * 0.72));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+
   function applyTheme() {
-    const t = Store.data ? Store.data.settings.theme : 'overworld';
-    document.documentElement.dataset.theme = t;
+    const s = Store.data ? Store.data.settings : { theme: 'overworld' };
+    const root = document.documentElement;
+    root.dataset.theme = s.theme;
+    const wood = k => s[k] && s[k] !== 'none' && WOOD_COLORS[s[k]] ? s[k] : null;
+    for (const [k, prop] of [['topWood', '--top-bg'], ['bottomWood', '--bottom-bg']]) {
+      if (wood(k)) root.style.setProperty(prop, woodBg(wood(k)));
+      else root.style.removeProperty(prop);
+    }
     if (window.BauNative && BauNative.setBarColor) {
-      BauNative.setBarColor({ overworld: '#1b1b1b', deep: '#101014', nether: '#1d0606', end: '#120a1c' }[t] || '#1b1b1b');
+      BauNative.setBarColor(wood('topWood') ? shade(WOOD_COLORS[wood('topWood')]) : THEME_BARS[s.theme] || '#1b1b1b');
     }
   }
 

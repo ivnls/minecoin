@@ -49,7 +49,7 @@ BLOCKS = '''
 dirt stone cobblestone oak_planks spruce_planks dark_oak_planks grass_block_side grass_block_top netherrack nether_bricks
 end_stone end_stone_bricks purpur_block obsidian deepslate bedrock bookshelf crafting_table_front crafting_table_top
 gold_block diamond_block emerald_block iron_block lapis_block redstone_block amethyst_block glowstone tnt_side
-barrel_side barrel_top sand gravel anvil
+barrel_side barrel_top sand gravel anvil copper_block coal_block netherite_block
 '''.split()
 
 BLOCK_ICONS = {
@@ -58,6 +58,10 @@ BLOCK_ICONS = {
     'barrel': 'barrel_top', 'grass_block': 'grass_block_side', 'furnace': 'furnace_front', 'jukebox': 'jukebox_side',
     'bricks': 'bricks', 'glass': 'glass', 'oak_log': 'oak_log', 'pumpkin': 'carved_pumpkin', 'beacon': 'beacon',
 }
+
+# madeiras para o topo e a barra inferior (configuráveis em Ajustes)
+WOODS = ['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak', 'mangrove', 'cherry', 'pale_oak', 'bamboo', 'crimson',
+         'warped']
 
 SOUNDS = {
     'click': 'random/click.ogg',
@@ -142,6 +146,15 @@ def main(src):
     with open(os.path.join(OUT, 'js', 'items.js'), 'w') as f:
         f.write('// gerado por tools/prepare_assets.py: todos os emblemas em mc/item/\n')
         f.write('const ITEM_NAMES = ' + json.dumps(sorted(names)) + ';\n')
+
+    # tábuas de madeira + a cor média de cada uma (para a barra de status do Android combinar com o topo)
+    woods = {}
+    for wood in WOODS:
+        im = Image.open(os.path.join(tex, 'block', wood + '_planks.png')).convert('RGB')
+        im.save(os.path.join(OUT, 'mc', 'block', wood + '_planks.png'))
+        woods[wood] = '#%02x%02x%02x' % im.resize((1, 1), Image.BOX).getpixel((0, 0))
+    with open(os.path.join(OUT, 'js', 'items.js'), 'a') as f:
+        f.write('const WOOD_COLORS = ' + json.dumps(woods) + ';\n')
 
     for name in BLOCKS:
         im = Image.open(os.path.join(tex, 'block', name + '.png'))

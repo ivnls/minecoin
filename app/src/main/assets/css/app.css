@@ -95,9 +95,9 @@ img {
 #top {
   flex: none;
   padding: calc(var(--safe-top) + 10px) 16px 8px;
-  background: var(--bar-bg);
+  background: var(--top-bg, var(--bar-bg));
   border-bottom: var(--u) solid #000;
-  box-shadow: 0 var(--u) 0 rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 calc(var(--u) * -2) 0 rgba(0, 0, 0, 0.35), 0 var(--u) 0 rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -282,6 +282,9 @@ h2 .grow { flex: 1; }
 .slot.selected {
   outline: var(--u) solid var(--yellow);
 }
+
+/* amostras de madeira: o realce branco esconderia a cor escolhida */
+.slot.swatch.selected::after { display: none; }
 
 .ico {
   width: 32px;
@@ -584,8 +587,9 @@ label.field {
   flex-direction: column;
   align-items: center;
   padding: 4px 0 calc(var(--safe-bottom) + 8px);
-  background: var(--bar-bg);
+  background: var(--bottom-bg, var(--bar-bg));
   border-top: var(--u) solid #000;
+  box-shadow: inset 0 calc(var(--u) * 2) 0 rgba(255, 255, 255, 0.14);
   position: relative;
 }
 
@@ -647,6 +651,19 @@ label.field {
 }
 
 .layer.dialog { align-items: center; padding: 16px; }
+
+/* fechando: os mesmos passos da abertura, de trás para frente */
+.layer.closing {
+  animation: fade-out 0.16s forwards;
+  pointer-events: none;
+}
+
+.layer.closing .sheet { animation: down 0.16s steps(4) forwards; }
+.layer.dialog.closing .sheet { animation: unpop 0.12s steps(3) forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .layer, .layer .sheet, .layer.closing, .layer.closing .sheet { animation: none; }
+}
 
 .sheet {
   width: 100%;
@@ -780,6 +797,10 @@ label.field {
 
 .picker .cell.selected span { color: #000; text-decoration: underline; }
 
+.on-dark .picker .cell { width: 96px; }
+.on-dark .picker .cell span { color: var(--gray); }
+.on-dark .picker .cell.selected span { color: var(--yellow); text-decoration: none; }
+
 /* ---------- dica (tooltip roxa) e notificações ---------- */
 
 .tooltip {
@@ -831,40 +852,79 @@ label.field {
 /* ---------- gráficos (colunas de blocos) ---------- */
 
 .chart {
+  --b: 32px;
   display: flex;
-  align-items: flex-end;
   gap: 4px;
-  height: 180px;
-  padding: 8px 6px 0;
-  position: relative;
+  padding: 10px 6px 0;
 }
 
 .chart .col {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: flex-end;
-  align-items: stretch;
-  height: 100%;
-  min-width: 0;
+  /* rótulo + 5 blocos */
+  height: calc(var(--b) * 5 + 22px);
 }
 
-.chart .blk {
-  background-size: 24px 24px;
+.chart .val {
+  font-size: 16px;
+  line-height: 20px;
+  color: #ddd;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+
+.chart .col.neg .val { color: var(--red); }
+
+/* uma pilha de blocos inteiros: a textura se repete a cada --b, sem blocos cortados */
+.chart .stack {
+  width: var(--b);
+  background-size: var(--b) var(--b);
+  background-repeat: repeat-y;
   background-position: 0 100%;
   image-rendering: pixelated;
-  border: var(--u) solid rgba(0, 0, 0, 0.6);
-  min-height: 4px;
+  box-shadow: 0 0 0 var(--u) rgba(0, 0, 0, 0.7);
 }
 
-.chart .lbl {
+.chart .col.cur .stack { box-shadow: 0 0 0 var(--u) #000, 0 0 0 calc(var(--u) * 2) #fff; }
+
+/* chão de grama sob as colunas */
+.ground {
+  height: 16px;
+  margin: 0 6px;
+  background: url('../mc/block/grass_block_side.png') 0 0 / var(--b, 32px) var(--b, 32px) repeat-x;
+  image-rendering: pixelated;
+  box-shadow: 0 calc(var(--u) * -1) 0 rgba(0, 0, 0, 0.5);
+}
+
+.months {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px 8px;
+}
+
+.months span {
+  flex: 1;
   text-align: center;
   color: var(--gray);
-  padding-top: 4px;
-  font-size: 16px;
 }
 
-.chart .col.cur .lbl { color: var(--yellow); }
+.months span.cur { color: var(--yellow); }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 6px 8px 8px;
+  color: var(--gray);
+  border-top: var(--u) solid rgba(255, 255, 255, 0.06);
+}
+
+.legend span { display: inline-flex; align-items: center; gap: 4px; }
+.legend img { width: 16px; height: 16px; }
 
 .bars .b {
   height: 10px;
@@ -966,6 +1026,9 @@ label.field {
 @keyframes fade { from { opacity: 0; } }
 @keyframes up { from { transform: translateY(40%); } }
 @keyframes pop { from { transform: scale(0.9); } }
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes down { to { transform: translateY(40%); } }
+@keyframes unpop { to { transform: scale(0.9); } }
 @keyframes slidein { from { transform: translateX(110%); } }
 @keyframes slideout { to { transform: translateX(110%); } }
 

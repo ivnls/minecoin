@@ -25,12 +25,15 @@ texturas, a fonte e os sons do Minecraft, tirados de
   desconta da conta e da dívida. Itens arquivados (vendidos, quitados) ficam separados.
 - **Histórico** por mês, com filtro por conta e o saldo corrente da conta em cada registro.
 - **Resumo do mês:** receitas, despesas, taxa de economia, gastos por categoria comparados ao mês anterior e o
-  patrimônio dos últimos 6 meses em colunas de blocos (pedra, ferro, ouro, diamante; netherrack quando negativo).
+  patrimônio dos últimos 6 meses em pilhas de blocos inteiros sobre a grama (carvão, cobre, ferro e ouro conforme a
+  altura; diamante no maior mês; netherrack quando negativo).
 - **Conquistas** com a notificação do jogo: primeiro registro, patrimônio de 1 mil / 10 mil / 100 mil / 1 milhão,
   meta alcançada, mês no azul, mês dentro do orçamento, dívida quitada, 7 dias seguidos, backup feito…
 - **Categorias** editáveis (nome e emblema), com 150+ itens e blocos para escolher.
-- **Temas:** Superfície (terra), Cavernas (ardósia), Nether e The End. Sons do jogo e vibração, que podem ser
-  desligados.
+- **Temas:** Superfície (terra), Cavernas (ardósia), Nether e The End. O topo e a barra inferior têm textura de
+  madeira, cada um escolhido separadamente em Ajustes (12 madeiras do jogo ou sem madeira); a barra de status do
+  Android acompanha a madeira do topo. Sons do jogo e vibração, que podem ser desligados.
+- **Janelas animadas:** sobem ao abrir e descem ao fechar, nos mesmos passos (respeita "reduzir animações").
 - **Backup** em JSON pelo seletor de arquivos do Android (exportar e importar).
 - **Mundo de exemplo** com 6 meses de dados para conhecer o app.
 

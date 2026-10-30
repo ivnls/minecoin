@@ -48,7 +48,7 @@ async function keypad(page, keys) {
 async function browserRun(base) {
   console.log('Navegador (localStorage)');
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 393, height: 852 } });
+  const page = await browser.newPage({ viewport: { width: 393, height: 852 }, reducedMotion: 'reduce' });
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(base + '/index.html');
@@ -141,6 +141,8 @@ async function browserRun(base) {
   check(money(await text(page, '#screen .item .right .sub')) === 900, 'saldo corrente no registro mais novo (1.400 - 500)');
   await page.click('#hotbar .hs[aria-label="Resumo"]');
   check(await page.locator('.chart .col').count() === 6, 'gráfico de 6 meses');
+  const stacks = await page.$$eval('.chart .stack', els => els.map(e => e.getBoundingClientRect().height));
+  check(stacks.length > 0 && stacks.every(hh => hh % 32 === 0), 'colunas só com blocos inteiros (múltiplos de 32px)');
   await shot(page, '04-summary');
 
   // voltar do Android: fecha janela, depois volta ao início, depois deixa sair
@@ -149,6 +151,22 @@ async function browserRun(base) {
   check(await page.evaluate(() => Bau.back()) === true && await page.locator('.layer').count() === 0, 'voltar fecha a janela');
   check(await page.evaluate(() => Bau.back()) === true, 'voltar leva ao início');
   check(await page.evaluate(() => Bau.back()) === false, 'no início, voltar sai do app');
+
+  // madeiras do topo e da barra, cada uma por conta própria
+  await page.click('#hotbar .hs[aria-label="Ajustes"]');
+  await page.click('.picker >> nth=0 >> .cell:has-text("Cerejeira")');
+  await page.click('.picker >> nth=1 >> .cell:has-text("Distorcida")');
+  const bgs = await page.evaluate(() => [getComputedStyle(document.getElementById('top')).backgroundImage,
+    getComputedStyle(document.getElementById('hotbar')).backgroundImage]);
+  check(bgs[0].includes('cherry_planks') && bgs[1].includes('warped_planks'), 'topo de cerejeira e barra distorcida');
+  const loaded = await page.evaluate(urls => Promise.all(urls.map(u => fetch(u).then(r => r.ok, () => false))),
+    bgs.map(b => /url\("([^"]+)"\)/.exec(b)[1]));
+  check(loaded.every(Boolean), 'as texturas de madeira carregam de verdade');
+  await page.click('.picker >> nth=1 >> .cell:has-text("Sem madeira")');
+  check(!(await page.evaluate(() => getComputedStyle(document.getElementById('hotbar')).backgroundImage)).includes('planks') &&
+    (await page.evaluate(() => getComputedStyle(document.getElementById('top')).backgroundImage)).includes('cherry_planks'),
+  'barra sem madeira não muda o topo');
+  await shot(page, '04b-woods');
 
   // backup: exporta, apaga tudo, importa
   await page.click('#hotbar .hs[aria-label="Ajustes"]');
@@ -178,10 +196,30 @@ async function browserRun(base) {
   await browser.close();
 }
 
+async function animationRun(base) {
+  console.log('Animação de fechar');
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 393, height: 852 } });
+  await page.goto(base + '/index.html');
+  await page.click('text=Novo mundo');
+  await page.click('.quick button:has-text("Despesa")');
+  await page.waitForTimeout(300);
+  await page.click('.sheet .close');
+  const during = await page.evaluate(() => {
+    const layer = document.querySelector('.layer');
+    const sheet = layer && layer.querySelector('.sheet');
+    return layer && { closing: layer.classList.contains('closing'), name: getComputedStyle(sheet).animationName };
+  });
+  check(during && during.closing && during.name === 'down', 'Novo registro desce ao fechar (animação "down")');
+  await page.waitForTimeout(500);
+  check(await page.locator('.layer').count() === 0, 'a janela some ao fim da animação');
+  await browser.close();
+}
+
 async function nativeRun(base) {
   console.log('Ponte nativa simulada (BauNative)');
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 393, height: 852 } });
+  const page = await browser.newPage({ viewport: { width: 393, height: 852 }, reducedMotion: 'reduce' });
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(() => {
@@ -210,6 +248,7 @@ async function nativeRun(base) {
   const calls = await page.evaluate(() => window.__calls);
   check(calls.some(c => /^export:bau-backup-\d{4}-\d\d-\d\d\.json:5$/.test(c)), 'exportar chama BauNative.exportBackup');
   check(calls.includes('import'), 'importar chama BauNative.importBackup');
+  check(calls.includes('bar:#755e38'), 'barra de status com a cor do carvalho escurecida');
   // o Android devolve o arquivo escolhido chamando Bau.onImport(texto)
   const json = await page.evaluate(() => window.__saved);
   const obj = JSON.parse(json);
@@ -232,6 +271,7 @@ async function nativeRun(base) {
   const base = 'http://localhost:' + server.address().port;
   try {
     await browserRun(base);
+    await animationRun(base);
     await nativeRun(base);
   } catch (e) {
     console.error(e);

@@ -196,7 +196,13 @@ const UI = (() => {
       const i = stack.indexOf(ctx);
       if (i < 0) return;
       stack.splice(i, 1);
-      layer.remove();
+      // a janela desce e o fundo some nos mesmos passos da abertura, ao contrário (veja .layer.closing)
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) layer.remove();
+      else {
+        layer.classList.add('closing');
+        panel.addEventListener('animationend', () => layer.remove(), { once: true });
+        setTimeout(() => layer.remove(), 400);
+      }
       if (!silent && opts.sound !== false) sound('chest_close', 0.25);
       ctx.onclose && ctx.onclose();
     }

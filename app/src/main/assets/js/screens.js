@@ -267,19 +267,32 @@ const Screens = (() => {
     const months = [];
     for (let i = 5; i >= 0; i--) months.push(Store.addMonths(m, -i));
     const nets = months.map(mm => Store.totals(Store.monthEnd(mm) < Store.today() ? Store.monthEnd(mm) : Store.today()).net);
+    // cada coluna é uma pilha de 1 a 5 blocos inteiros; o minério mostra a altura (pilhas iguais, minério igual)
+    // e o maior mês vira diamante. Mês negativo: netherrack.
     const max = Math.max(1, ...nets.map(Math.abs));
+    const best = Math.max(...nets);
+    const stackOf = v => {
+      if (!v) return { n: 0 };
+      const n = Math.max(1, Math.round((Math.abs(v) / max) * 5));
+      if (v < 0) return { n, block: 'netherrack' };
+      return { n, block: v === best ? 'diamond_block' : ORES[n - 1] };
+    };
     root.append(h('h2', icon('gold_block', 's24'), 'Patrimônio por mês'));
-    root.append(h('div.list', h('div.chart', months.map((mm, i) => {
-      const v = nets[i];
-      const hgt = Math.max(4, Math.round((Math.abs(v) / max) * 130));
-      const block = v < 0 ? 'netherrack' : v >= max * 0.999 ? 'diamond_block' : v >= max * 0.6 ? 'gold_block'
-        : v >= max * 0.3 ? 'iron_block' : 'cobblestone';
-      return h('div.col' + (mm === m ? '.cur' : ''), { title: money(v) },
-        h('div.small.center', { style: 'font-size:16px;color:#ddd;white-space:nowrap;overflow:hidden' },
-          compact(v)),
-        h('div.blk', { style: 'height:' + hgt + 'px;background-image:url(mc/block/' + block + '.png)' }),
-        h('div.lbl', MONTHS_SHORT[Number(mm.slice(5)) - 1]));
-    }))));
+    root.append(h('div.list',
+      h('div.chart', months.map((mm, i) => {
+        const v = nets[i];
+        const st = stackOf(v);
+        return h('div.col' + (mm === m ? '.cur' : '') + (v < 0 ? '.neg' : ''), { title: money(v) },
+          h('div.val', compact(v)),
+          st.n ? h('div.stack', { style: 'height:calc(var(--b) * ' + st.n + ');background-image:url(mc/block/' +
+            st.block + '.png)' }) : null);
+      })),
+      h('div.ground'),
+      h('div.months', months.map(mm => h('span' + (mm === m ? '.cur' : ''), MONTHS_SHORT[Number(mm.slice(5)) - 1]))),
+      h('div.legend', h('span', 'Blocos:'),
+        [['coal_block', '1'], ['copper_block', '2'], ['iron_block', '3'], ['gold_block', '4–5'], ['diamond_block', 'recorde']]
+          .map(([b, t]) => h('span', h('img', { src: 'mc/block/' + b + '.png', alt: '' }), t)),
+        nets.some(v => v < 0) ? h('span', h('img', { src: 'mc/block/netherrack.png', alt: '' }), 'negativo') : null)));
 
     for (const kind of ['expense', 'income']) {
       const list = D().categories.filter(c => c.kind === kind && flow.byCat[c.id])
@@ -309,6 +322,8 @@ const Screens = (() => {
     }
   }
 
+  const ORES = ['coal_block', 'copper_block', 'iron_block', 'gold_block', 'gold_block'];
+
   function compact(v) {
     const a = Math.abs(v) / 100;
     const s = a >= 1e6 ? (a / 1e6).toFixed(1).replace('.', ',') + 'M' : a >= 1e3 ? Math.round(a / 1e3) + 'k' : String(Math.round(a));
@@ -320,6 +335,34 @@ const Screens = (() => {
   const CURRENCIES = [['BRL', 'Real (R$)'], ['USD', 'Dólar (US$)'], ['EUR', 'Euro (€)'], ['GBP', 'Libra (£)'],
     ['ARS', 'Peso argentino'], ['CLP', 'Peso chileno'], ['MXN', 'Peso mexicano'], ['JPY', 'Iene (¥)'], ['CAD', 'Dólar canadense'],
     ['AUD', 'Dólar australiano'], ['CHF', 'Franco suíço'], ['AOA', 'Kwanza'], ['MZN', 'Metical']];
+
+  const WOODS = [['oak', 'Carvalho'], ['spruce', 'Pinheiro'], ['birch', 'Bétula'], ['jungle', 'Selva'], ['acacia', 'Acácia'],
+    ['dark_oak', 'Carvalho escuro'], ['mangrove', 'Mangue'], ['cherry', 'Cerejeira'], ['pale_oak', 'Carvalho pálido'],
+    ['bamboo', 'Bambu'], ['crimson', 'Carmesim'], ['warped', 'Distorcida'], ['none', 'Sem madeira (cor do tema)']];
+
+  function woodPicker(key) {
+    const cur = D().settings[key];
+    const row = h('div.picker');
+    for (const [id, name] of WOODS) {
+      const cell = h('div.cell' + (id === cur ? '.selected' : ''), {
+        onclick: () => {
+          if (D().settings[key] === id) return;
+          sound('click');
+          Store.setSetting(key, id);
+          App.applyTheme();
+        },
+      }, h('div.slot.big.swatch' + (id === cur ? '.selected' : ''),
+        id === 'none' ? h('img', { src: 'mc/item/barrier.png', alt: '' })
+          : h('img', { src: 'mc/block/' + id + '_planks.png', alt: '' })),
+      h('span', name));
+      row.append(cell);
+    }
+    requestAnimationFrame(() => {
+      const sel = row.querySelector('.cell.selected');
+      if (sel) row.scrollLeft = sel.offsetLeft - row.clientWidth / 2 + sel.clientWidth / 2;
+    });
+    return row;
+  }
 
   const THEMES = [['overworld', 'Superfície (terra)'], ['deep', 'Cavernas (ardósia)'], ['nether', 'Nether'], ['end', 'The End']];
 
@@ -352,6 +395,8 @@ const Screens = (() => {
     wrap.append(h('h2', icon('painting', 's24'), 'Aparência e som'));
     wrap.append(h('label.field', 'Tema'), h('select', { onchange: e => { Store.setSetting('theme', e.target.value); App.applyTheme(); } },
       THEMES.map(([t, n]) => h('option', { value: t, selected: t === s.theme }, n))));
+    wrap.append(h('label.field', 'Madeira do topo'), woodPicker('topWood'));
+    wrap.append(h('label.field', 'Madeira da barra inferior'), woodPicker('bottomWood'));
     wrap.append(h('div', { style: 'margin-top:8px' },
       UI.check('Sons do jogo', s.sound, v => Store.setSetting('sound', v)),
       UI.check('Vibração', s.vibrate, v => Store.setSetting('vibrate', v))));
