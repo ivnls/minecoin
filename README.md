@@ -1,12 +1,12 @@
-<p align="center"><img src="app/src/main/assets/mc/gui/logo.png" width="96" height="96" alt="Baú"></p>
+<p align="center"><img src="app/src/main/assets/mc/gui/logo.png" width="96" height="96" alt="Minecoin"></p>
 
-<h1 align="center">Baú</h1>
+<h1 align="center">Minecoin</h1>
 
 <p align="center"><b>Seu patrimônio, bloco por bloco.</b> Um app Android de ativos pessoais com a cara do Minecraft.</p>
 
 <p align="center"><img src="docs/screenshots/telas.png" alt="Início, novo registro, inventário e resumo"></p>
 
-O Baú anota contas, gastos, receitas, bens e dívidas e mostra o seu patrimônio líquido, tudo no próprio aparelho, sem
+O Minecoin anota contas, gastos, receitas, bens e dívidas e mostra o seu patrimônio líquido, tudo no próprio aparelho, sem
 cadastro e sem internet. A arquitetura segue o [Tally](https://github.com/IamAndelib/Tally-android): uma `WebView`
 sobre arquivos HTML/CSS/JS locais e uma Activity em Java que guarda os dados e cuida do backup. A interface usa as
 texturas, a fonte e os sons do Minecraft, tirados de
@@ -62,7 +62,7 @@ sudo apt install android-sdk android-sdk-platform-23 dalvik-exchange apksigner
 tools/build-apk.sh
 ```
 
-O resultado é `build/bau.apk` (minSdk 21, targetSdk 34).
+O resultado é `build/minecoin.apk` (minSdk 21, targetSdk 34).
 
 ## Testar a interface no navegador
 
@@ -104,7 +104,7 @@ baús a partir da textura da entidade e gera uma fonte TrueType pixelada a parti
 
 ```
 app/src/main/
-  java/app/bau/ativos/MainActivity.java   WebView, arquivo de dados, backup, botão Voltar
+  java/app/minecoin/MainActivity.java      WebView, arquivo de dados, backup, botão Voltar
   assets/index.html
   assets/css/app.css                      visual do jogo (nine-slices, HUD, barra de atalhos)
   assets/js/store.js                      dados, saldos, patrimônio, mundo de exemplo

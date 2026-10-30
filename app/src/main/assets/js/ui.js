@@ -89,7 +89,7 @@ const UI = (() => {
   function buzz(ms) {
     const s = Store.data && Store.data.settings;
     if (s && !s.vibrate) return;
-    if (window.BauNative && BauNative.vibrate) BauNative.vibrate(ms);
+    if (window.MinecoinNative && MinecoinNative.vibrate) MinecoinNative.vibrate(ms);
     else if (navigator.vibrate) navigator.vibrate(ms);
   }
 

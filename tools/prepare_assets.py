@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copia e prepara os assets do Minecraft usados pelo Baú.
+"""Copia e prepara os assets do Minecraft usados pelo Minecoin.
 
 Uso:
     git clone --depth 1 --filter=blob:none --sparse -b 26.3 \
@@ -262,7 +262,7 @@ def build_font(mc, path):
     fb.setupGlyf(outlines)
     fb.setupHorizontalMetrics(advance)
     fb.setupHorizontalHeader(ascent=10 * unit, descent=-2 * unit)
-    fb.setupNameTable({'familyName': 'Minecraft Bau', 'styleName': 'Regular'})
+    fb.setupNameTable({'familyName': 'Minecraft Minecoin', 'styleName': 'Regular'})
     fb.setupOS2(sTypoAscender=10 * unit, sTypoDescender=-2 * unit, usWinAscent=10 * unit, usWinDescent=2 * unit)
     fb.setupPost()
     fb.save(path)

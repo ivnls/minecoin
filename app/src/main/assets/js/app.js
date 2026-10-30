@@ -27,9 +27,9 @@ const App = (() => {
   function lastAccount(id) {
     if (id) {
       last = id;
-      try { localStorage.setItem('bau.lastAccount', id); } catch (e) { /* sem armazenamento */ }
+      try { localStorage.setItem('minecoin.lastAccount', id); } catch (e) { /* sem armazenamento */ }
     }
-    if (!last) try { last = localStorage.getItem('bau.lastAccount'); } catch (e) { /* idem */ }
+    if (!last) try { last = localStorage.getItem('minecoin.lastAccount'); } catch (e) { /* idem */ }
     return last;
   }
 
@@ -121,8 +121,8 @@ const App = (() => {
       if (wood(k)) root.style.setProperty(prop, woodBg(wood(k)));
       else root.style.removeProperty(prop);
     }
-    if (window.BauNative && BauNative.setBarColor) {
-      BauNative.setBarColor(wood('topWood') ? shade(WOOD_COLORS[wood('topWood')]) : THEME_BARS[s.theme] || '#1b1b1b');
+    if (window.MinecoinNative && MinecoinNative.setBarColor) {
+      MinecoinNative.setBarColor(wood('topWood') ? shade(WOOD_COLORS[wood('topWood')]) : THEME_BARS[s.theme] || '#1b1b1b');
     }
   }
 
@@ -224,7 +224,7 @@ const App = (() => {
   // ---------- backup ----------
 
   function backupName() {
-    return 'bau-backup-' + Store.today() + '.json';
+    return 'minecoin-backup-' + Store.today() + '.json';
   }
 
   function exportBackup() {
@@ -232,9 +232,9 @@ const App = (() => {
     d.achievements.backup = d.achievements.backup || Store.today();
     Store.commit();
     Store.flush();
-    const json = JSON.stringify(Object.assign({ app: 'bau', exported: new Date().toISOString() }, d), null, 1);
-    if (window.BauNative) {
-      BauNative.exportBackup(json, backupName());
+    const json = JSON.stringify(Object.assign({ app: 'minecoin', exported: new Date().toISOString() }, d), null, 1);
+    if (window.MinecoinNative) {
+      MinecoinNative.exportBackup(json, backupName());
       return;
     }
     const a = h('a', { href: URL.createObjectURL(new Blob([json], { type: 'application/json' })), download: backupName() });
@@ -245,8 +245,8 @@ const App = (() => {
   }
 
   function importBackup() {
-    if (window.BauNative) {
-      BauNative.importBackup();
+    if (window.MinecoinNative) {
+      MinecoinNative.importBackup();
       return;
     }
     const inp = h('input', { type: 'file', accept: '.json,application/json', style: 'display:none' });
@@ -265,7 +265,7 @@ const App = (() => {
       obj = JSON.parse(text);
       if (!obj || !Array.isArray(obj.accounts) || !Array.isArray(obj.tx)) throw new Error('formato');
     } catch (e) {
-      toast('Arquivo inválido', 'Não é um backup do Baú', { plain: true, icon: 'barrier' });
+      toast('Arquivo inválido', 'Não é um backup do Minecoin', { plain: true, icon: 'barrier' });
       return;
     }
     const doIt = () => {
@@ -324,11 +324,11 @@ const App = (() => {
   window.addEventListener('keydown', e => { if (e.key === 'Escape') UI.closeTop(); });
 
   // ponte para o Android
-  window.Bau = { back, onImport, onExported, flush: () => Store.flush() };
+  window.Minecoin = { back, onImport, onExported, flush: () => Store.flush() };
 
   return {
     go, boot, render, applyTheme, lastAccount, showAchievements, exportBackup, importBackup,
-    resetFormat: () => location.reload(), version: () => (window.BauNative && BauNative.version ? BauNative.version() : VERSION),
+    resetFormat: () => location.reload(), version: () => (window.MinecoinNative && MinecoinNative.version ? MinecoinNative.version() : VERSION),
   };
 })();
 

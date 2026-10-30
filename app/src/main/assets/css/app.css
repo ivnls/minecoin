@@ -1,4 +1,4 @@
-/* Baú: interface no estilo das telas do Minecraft. Um "pixel" do jogo vale --u (2px). */
+/* Minecoin: interface no estilo das telas do Minecraft. Um "pixel" do jogo vale --u (2px). */
 
 @font-face {
   font-family: 'MC';
@@ -991,11 +991,11 @@ label.field {
 }
 
 .logo-name {
-  font-size: 64px;
-  line-height: 72px;
+  font-size: 48px;
+  line-height: 56px;
   color: #e8e8e8;
   text-shadow: 6px 6px 0 #3a3a3a;
-  letter-spacing: 4px;
+  letter-spacing: 2px;
   margin: 10px 0 0;
 }
 

@@ -420,7 +420,7 @@ const Screens = (() => {
       }, { danger: true, icon: 'tnt_minecart' }), 'danger')));
 
     wrap.append(h('div.copy.center', { style: 'margin-top:28px' },
-      h('div', 'Baú ' + App.version()),
+      h('div', 'Minecoin ' + App.version()),
       h('div', 'Texturas, fonte e sons: Minecraft © Mojang AB.'),
       h('div', 'Projeto de fã sem vínculo com a Mojang ou a Microsoft.'),
       h('div', 'Inspirado no Tally (MIT).')));
@@ -436,7 +436,7 @@ const Screens = (() => {
     const splash = SPLASHES[Math.floor(Math.random() * SPLASHES.length)];
     root.append(h('div.welcome',
       h('img', { src: 'mc/gui/logo.png', alt: '', style: 'width:96px;height:96px' }),
-      h('div.logo-name', 'BAÚ'),
+      h('div.logo-name', 'MINECOIN'),
       h('div.splash', splash),
       h('div.btns',
         button('Novo mundo', () => { Store.start(false); sound('levelup', 0.3); App.boot(); }),

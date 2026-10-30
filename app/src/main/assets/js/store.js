@@ -1,10 +1,10 @@
 'use strict';
 
-// Dados do Baú: contas, registros, bens, dívidas e conquistas. Valores sempre em centavos (inteiros).
-// No app Android os dados ficam num arquivo privado (BauNative); no navegador, no localStorage.
+// Dados do Minecoin: contas, registros, bens, dívidas e conquistas. Valores sempre em centavos (inteiros).
+// No app Android os dados ficam num arquivo privado (MinecoinNative); no navegador, no localStorage.
 
 const Store = (() => {
-  const KEY = 'bau.v1';
+  const KEY = 'minecoin.v1';
   let data = null;
   let saveTimer = 0;
   const listeners = [];
@@ -95,7 +95,7 @@ const Store = (() => {
   function load() {
     let raw = null;
     try {
-      raw = window.BauNative ? BauNative.load() : localStorage.getItem(KEY);
+      raw = window.MinecoinNative ? MinecoinNative.load() : localStorage.getItem(KEY);
     } catch (e) { raw = null; }
     if (raw) {
       try { data = migrate(JSON.parse(raw)); } catch (e) { data = null; }
@@ -115,7 +115,7 @@ const Store = (() => {
   function persist() {
     const json = JSON.stringify(data);
     try {
-      if (window.BauNative) BauNative.save(json);
+      if (window.MinecoinNative) MinecoinNative.save(json);
       else localStorage.setItem(KEY, json);
     } catch (e) { console.error('falha ao salvar', e); }
   }
@@ -147,7 +147,7 @@ const Store = (() => {
   function wipe() {
     data = null;
     try {
-      if (window.BauNative) BauNative.save('');
+      if (window.MinecoinNative) MinecoinNative.save('');
       else localStorage.removeItem(KEY);
     } catch (e) { /* nada a fazer */ }
   }

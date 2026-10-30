@@ -2,7 +2,7 @@
 # Monta o APK sem Gradle, só com as ferramentas do SDK (aapt2, javac, d8 ou dx, zipalign, apksigner).
 # Útil onde o Android Gradle Plugin não está disponível. Com o Android Studio/Gradle, use ./gradlew assembleRelease.
 #
-#   ANDROID_SDK=/usr/lib/android-sdk tools/build-apk.sh        -> build/bau.apk
+#   ANDROID_SDK=/usr/lib/android-sdk tools/build-apk.sh        -> build/minecoin.apk
 #
 # Variáveis: ANDROID_SDK (padrão /usr/lib/android-sdk), PLATFORM (android-NN; padrão a mais nova instalada),
 # KEYSTORE/KS_PASS/KEY_ALIAS (padrão: a chave de debug em ~/.android/debug.keystore, criada se faltar).
@@ -16,9 +16,9 @@ BT="$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)"
 tool() { if [ -x "$BT/$1" ]; then echo "$BT/$1"; else command -v "$1"; fi; }
 AAPT2="$(tool aapt2)"; ZIPALIGN="$(tool zipalign)"; APKSIGNER="$(tool apksigner)"
 
-VERSION_NAME="$(sed -n 's/^bauVersion=//p' "$ROOT/gradle.properties")"
-VERSION_CODE="$(sed -n 's/^bauVersionCode=//p' "$ROOT/gradle.properties")"
-PKG=app.bau.ativos
+VERSION_NAME="$(sed -n 's/^minecoinVersion=//p' "$ROOT/gradle.properties")"
+VERSION_CODE="$(sed -n 's/^minecoinVersionCode=//p' "$ROOT/gradle.properties")"
+PKG=app.minecoin
 MAIN="$ROOT/app/src/main"
 OUT="$ROOT/build/apk"
 rm -rf "$OUT" && mkdir -p "$OUT/res" "$OUT/classes" "$OUT/gen"
@@ -58,6 +58,6 @@ if [ ! -f "$KEYSTORE" ]; then
 fi
 mkdir -p "$ROOT/build"
 "$APKSIGNER" sign --ks "$KEYSTORE" --ks-pass "pass:$KS_PASS" --ks-key-alias "$KEY_ALIAS" \
-  --out "$ROOT/build/bau.apk" "$OUT/aligned.apk"
-"$APKSIGNER" verify "$ROOT/build/bau.apk"
-echo "APK: $ROOT/build/bau.apk ($(du -h "$ROOT/build/bau.apk" | cut -f1))"
+  --out "$ROOT/build/minecoin.apk" "$OUT/aligned.apk"
+"$APKSIGNER" verify "$ROOT/build/minecoin.apk"
+echo "APK: $ROOT/build/minecoin.apk ($(du -h "$ROOT/build/minecoin.apk" | cut -f1))"

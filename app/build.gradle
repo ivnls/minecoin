@@ -3,15 +3,15 @@ plugins {
 }
 
 android {
-    namespace 'app.bau.ativos'
+    namespace 'app.minecoin'
     compileSdk 34
 
     defaultConfig {
-        applicationId 'app.bau.ativos'
+        applicationId 'app.minecoin'
         minSdk 21
         targetSdk 34
-        versionCode Integer.parseInt(project.property('bauVersionCode'))
-        versionName project.property('bauVersion')
+        versionCode Integer.parseInt(project.property('minecoinVersionCode'))
+        versionName project.property('minecoinVersion')
     }
 
     buildTypes {

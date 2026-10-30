@@ -1,4 +1,4 @@
-package app.bau.ativos;
+package app.minecoin;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -72,7 +72,7 @@ public class MainActivity extends Activity {
                 return openExternal(Uri.parse(url));
             }
         });
-        web.addJavascriptInterface(new Bridge(), "BauNative");
+        web.addJavascriptInterface(new Bridge(), "MinecoinNative");
         setContentView(web);
 
         if (savedInstanceState != null) {
@@ -107,12 +107,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        web.evaluateJavascript("window.Bau && Bau.flush()", null);
+        web.evaluateJavascript("window.Minecoin && Minecoin.flush()", null);
     }
 
     @Override
     public void onBackPressed() {
-        web.evaluateJavascript("window.Bau ? Bau.back() : false", new ValueCallback<String>() {
+        web.evaluateJavascript("window.Minecoin ? Minecoin.back() : false", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String handled) {
                 if (!"true".equals(handled)) finish();
@@ -123,7 +123,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (web != null) {
-            web.removeJavascriptInterface("BauNative");
+            web.removeJavascriptInterface("MinecoinNative");
             web.destroy();
         }
         super.onDestroy();
@@ -132,13 +132,13 @@ public class MainActivity extends Activity {
     // ---------- arquivo de dados ----------
 
     private File dataFile() {
-        return new File(getFilesDir(), "bau.json");
+        return new File(getFilesDir(), "minecoin.json");
     }
 
     private synchronized String readData() {
         File f = dataFile();
         if (!f.exists()) {
-            File bak = new File(getFilesDir(), "bau.json.bak");
+            File bak = new File(getFilesDir(), "minecoin.json.bak");
             if (!bak.exists()) return null;
             f = bak;
         }
@@ -154,17 +154,17 @@ public class MainActivity extends Activity {
         File f = dataFile();
         if (json == null || json.isEmpty()) {
             f.delete();
-            new File(getFilesDir(), "bau.json.bak").delete();
+            new File(getFilesDir(), "minecoin.json.bak").delete();
             return;
         }
-        File tmp = new File(getFilesDir(), "bau.json.tmp");
+        File tmp = new File(getFilesDir(), "minecoin.json.tmp");
         try (FileOutputStream out = new FileOutputStream(tmp)) {
             out.write(json.getBytes(UTF8));
             out.getFD().sync();
         } catch (Exception e) {
             return;
         }
-        File bak = new File(getFilesDir(), "bau.json.bak");
+        File bak = new File(getFilesDir(), "minecoin.json.bak");
         if (f.exists()) {
             bak.delete();
             f.renameTo(bak);
@@ -197,18 +197,18 @@ public class MainActivity extends Activity {
                 }
             }
             pendingExport = null;
-            if (resultCode == RESULT_OK) web.evaluateJavascript("Bau.onExported(" + ok + ")", null);
+            if (resultCode == RESULT_OK) web.evaluateJavascript("Minecoin.onExported(" + ok + ")", null);
         } else if (requestCode == REQ_IMPORT && resultCode == RESULT_OK && uri != null) {
             try (InputStream in = getContentResolver().openInputStream(uri)) {
                 String text = readAll(in);
-                web.evaluateJavascript("Bau.onImport(" + JSONObject.quote(text) + ")", null);
+                web.evaluateJavascript("Minecoin.onImport(" + JSONObject.quote(text) + ")", null);
             } catch (Exception e) {
                 Toast.makeText(this, "Não foi possível ler o arquivo", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    /** Métodos chamados pelo JavaScript como BauNative.xxx(). */
+    /** Métodos chamados pelo JavaScript como MinecoinNative.xxx(). */
     private class Bridge {
         @JavascriptInterface
         public String load() {

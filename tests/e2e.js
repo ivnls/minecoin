@@ -1,5 +1,5 @@
 // Teste ponta a ponta da interface (Playwright + Chromium), sem Android: serve app/src/main/assets e usa o app como
-// um usuário. Uma segunda rodada simula a ponte nativa (BauNative) para conferir o caminho do Android.
+// um usuário. Uma segunda rodada simula a ponte nativa (MinecoinNative) para conferir o caminho do Android.
 //
 //   node tests/e2e.js            (precisa do pacote "playwright" e do Chromium dele)
 //   SHOTS=dir node tests/e2e.js  (também salva capturas de tela em dir/)
@@ -148,9 +148,9 @@ async function browserRun(base) {
   // voltar do Android: fecha janela, depois volta ao início, depois deixa sair
   await page.click('#hotbar .hs[aria-label="Ajustes"]');
   await page.click('button:has-text("Categorias")');
-  check(await page.evaluate(() => Bau.back()) === true && await page.locator('.layer').count() === 0, 'voltar fecha a janela');
-  check(await page.evaluate(() => Bau.back()) === true, 'voltar leva ao início');
-  check(await page.evaluate(() => Bau.back()) === false, 'no início, voltar sai do app');
+  check(await page.evaluate(() => Minecoin.back()) === true && await page.locator('.layer').count() === 0, 'voltar fecha a janela');
+  check(await page.evaluate(() => Minecoin.back()) === true, 'voltar leva ao início');
+  check(await page.evaluate(() => Minecoin.back()) === false, 'no início, voltar sai do app');
 
   // madeiras do topo e da barra, cada uma por conta própria
   await page.click('#hotbar .hs[aria-label="Ajustes"]');
@@ -173,7 +173,7 @@ async function browserRun(base) {
   const [download] = await Promise.all([page.waitForEvent('download'), page.click('button:has-text("Exportar")')]);
   const backupPath = await download.path();
   const backup = JSON.parse(fs.readFileSync(backupPath, 'utf8'));
-  check(backup.app === 'bau' && backup.tx.length === 5, 'backup exportado com 5 registros');
+  check(backup.app === 'minecoin' && backup.tx.length === 5, 'backup exportado com 5 registros');
   await page.click('button:has-text("Apagar tudo")');
   await page.click('.layer.dialog button:has-text("Apagar tudo")');
   await page.waitForSelector('text=Importar backup');
@@ -186,7 +186,7 @@ async function browserRun(base) {
   await page.click('#hotbar .hs[aria-label="Ajustes"]');
   await page.selectOption('#screen select >> nth=1', 'nether');
   check(await page.evaluate(() => document.documentElement.dataset.theme) === 'nether', 'tema Nether');
-  await page.evaluate(() => Bau.flush());
+  await page.evaluate(() => Minecoin.flush());
   await page.reload();
   await page.waitForSelector('#hotbar .hs');
   check(await page.evaluate(() => Store.data.tx.length) === 5, 'dados continuam depois de recarregar');
@@ -217,7 +217,7 @@ async function animationRun(base) {
 }
 
 async function nativeRun(base) {
-  console.log('Ponte nativa simulada (BauNative)');
+  console.log('Ponte nativa simulada (MinecoinNative)');
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 393, height: 852 }, reducedMotion: 'reduce' });
   const errors = [];
@@ -225,7 +225,7 @@ async function nativeRun(base) {
   await page.addInitScript(() => {
     window.__saved = null;
     window.__calls = [];
-    window.BauNative = {
+    window.MinecoinNative = {
       load: () => window.__saved,
       save: json => { window.__saved = json; window.__calls.push('save'); },
       exportBackup: (json, name) => window.__calls.push('export:' + name + ':' + JSON.parse(json).accounts.length),
@@ -240,25 +240,25 @@ async function nativeRun(base) {
   await page.waitForSelector('.hero .value');
   await page.waitForTimeout(300);
   const saved = await page.evaluate(() => JSON.parse(window.__saved));
-  check(saved && saved.accounts.length === 5 && saved.tx.length > 50, 'mundo de exemplo salvo pelo BauNative.save');
+  check(saved && saved.accounts.length === 5 && saved.tx.length > 50, 'mundo de exemplo salvo pelo MinecoinNative.save');
   await page.click('#hotbar .hs[aria-label="Ajustes"]');
   check((await page.locator('.copy').innerText()).includes('9.9.9'), 'versão vem do app');
   await page.click('button:has-text("Exportar")');
   await page.click('button:has-text("Importar")');
   const calls = await page.evaluate(() => window.__calls);
-  check(calls.some(c => /^export:bau-backup-\d{4}-\d\d-\d\d\.json:5$/.test(c)), 'exportar chama BauNative.exportBackup');
-  check(calls.includes('import'), 'importar chama BauNative.importBackup');
+  check(calls.some(c => /^export:minecoin-backup-\d{4}-\d\d-\d\d\.json:5$/.test(c)), 'exportar chama MinecoinNative.exportBackup');
+  check(calls.includes('import'), 'importar chama MinecoinNative.importBackup');
   check(calls.includes('bar:#755e38'), 'barra de status com a cor do carvalho escurecida');
-  // o Android devolve o arquivo escolhido chamando Bau.onImport(texto)
+  // o Android devolve o arquivo escolhido chamando Minecoin.onImport(texto)
   const json = await page.evaluate(() => window.__saved);
   const obj = JSON.parse(json);
   obj.accounts = obj.accounts.slice(0, 1);
   obj.tx = obj.tx.filter(t => t.account === obj.accounts[0].id && t.type !== 'transfer');
-  await page.evaluate(t => Bau.onImport(t), JSON.stringify(obj));
+  await page.evaluate(t => Minecoin.onImport(t), JSON.stringify(obj));
   await page.click('.layer.dialog button:has-text("Substituir")');
   await page.waitForTimeout(300);
-  check(await page.evaluate(() => JSON.parse(window.__saved).accounts.length) === 1, 'Bau.onImport substitui os dados');
-  await page.evaluate(() => Bau.onImport('isto não é json'));
+  check(await page.evaluate(() => JSON.parse(window.__saved).accounts.length) === 1, 'Minecoin.onImport substitui os dados');
+  await page.evaluate(() => Minecoin.onImport('isto não é json'));
   check(await page.locator('.toast:has-text("Arquivo inválido")').count() === 1, 'arquivo inválido é recusado');
   await shot(page, '06-native');
   check(errors.length === 0, 'sem erros de JavaScript' + (errors.length ? ': ' + errors.join('; ') : ''));
