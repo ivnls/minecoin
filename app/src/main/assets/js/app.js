@@ -298,6 +298,41 @@ const App = (() => {
     return false;
   }
 
+  // ---------- widgets da tela inicial ----------
+
+  // resumo já formatado para os widgets do Android desenharem sem repetir as contas do app
+  function widgetSnapshot() {
+    const d = Store.data;
+    if (!d) return { empty: true, theme: 'overworld' };
+    const t = Store.totals();
+    const month = Store.ym(Store.today());
+    const flow = Store.monthFlow(month);
+    const s = d.settings;
+    return {
+      theme: s.theme,
+      net: UI.money(t.net),
+      netNegative: t.net < 0,
+      goal: s.goal,
+      goalText: s.goal > 0 ? UI.money(s.goal, { short: true }) : '',
+      pct: s.goal > 0 ? Math.max(0, Math.min(1, t.net / s.goal)) : 0,
+      month,
+      income: UI.money(flow.income),
+      expense: UI.money(flow.expense),
+      zero: UI.money(0),
+      advCount: ADVANCEMENTS.filter(a => d.achievements[a.id]).length,
+      advTotal: ADVANCEMENTS.length,
+      adv: ADVANCEMENTS.map(a => ({ icon: a.icon, name: a.name, got: d.achievements[a.id] || '' })),
+    };
+  }
+
+  let widgetTimer = 0;
+
+  function pushWidgets() {
+    if (!window.MinecoinNative || !MinecoinNative.updateWidgets) return;
+    clearTimeout(widgetTimer);
+    widgetTimer = setTimeout(() => MinecoinNative.updateWidgets(JSON.stringify(widgetSnapshot())), 300);
+  }
+
   function boot() {
     Store.load();
     state.tab = 'home';
@@ -308,6 +343,20 @@ const App = (() => {
     if (Store.data) checkAdvancements(true);
     booted = !!Store.data;
     render();
+    pushWidgets();
+    if (Store.data && window.MinecoinNative && MinecoinNative.takeLaunchTarget) open(MinecoinNative.takeLaunchTarget());
+  }
+
+  // aberto por um widget da tela inicial
+  function open(target) {
+    if (!Store.data || !target) return;
+    UI.closeAll();
+    if (target === 'achievements') {
+      go('home');
+      showAchievements();
+    } else if (target === 'summary' || target === 'home') {
+      go(target, target === 'summary' ? { month: null } : null);
+    }
   }
 
   let booted = false;
@@ -317,6 +366,7 @@ const App = (() => {
     if (!booted) return;
     render();
     checkAdvancements(false);
+    pushWidgets();
   });
 
   window.addEventListener('pagehide', () => Store.flush());
@@ -324,7 +374,7 @@ const App = (() => {
   window.addEventListener('keydown', e => { if (e.key === 'Escape') UI.closeTop(); });
 
   // ponte para o Android
-  window.Minecoin = { back, onImport, onExported, flush: () => Store.flush() };
+  window.Minecoin = { back, onImport, onExported, flush: () => Store.flush(), widgetSnapshot, open };
 
   return {
     go, boot, render, applyTheme, lastAccount, showAchievements, exportBackup, importBackup,

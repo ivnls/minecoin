@@ -23,5 +23,51 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- widgets da tela inicial (desenhados em Widgets.java) -->
+        <receiver
+            android:name=".NetWorthWidget"
+            android:exported="true"
+            android:label="@string/widget_net_worth">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_net_worth" />
+        </receiver>
+        <receiver
+            android:name=".GoalWidget"
+            android:exported="true"
+            android:label="@string/widget_goal">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_goal" />
+        </receiver>
+        <receiver
+            android:name=".MonthWidget"
+            android:exported="true"
+            android:label="@string/widget_month">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_month" />
+        </receiver>
+        <receiver
+            android:name=".AchievementsWidget"
+            android:exported="true"
+            android:label="@string/widget_achievements">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_achievements" />
+        </receiver>
     </application>
 </manifest>

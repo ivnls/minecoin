@@ -43,10 +43,13 @@ public class MainActivity extends Activity {
 
     private WebView web;
     private String pendingExport;
+    // aberto por um widget: a tela que ele pediu (o JavaScript busca com takeLaunchTarget ao iniciar)
+    private volatile String launchTarget;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        launchTarget = getIntent().getStringExtra(Widgets.EXTRA_TARGET);
         setBarColor(Color.parseColor("#1b1b1b"));
 
         if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
@@ -96,6 +99,15 @@ public class MainActivity extends Activity {
         Window w = getWindow();
         w.setStatusBarColor(color);
         w.setNavigationBarColor(Color.BLACK);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String target = intent.getStringExtra(Widgets.EXTRA_TARGET);
+        if (target != null && target.matches("[a-z]+")) {
+            web.evaluateJavascript("window.Minecoin && Minecoin.open('" + target + "')", null);
+        }
     }
 
     @Override
@@ -213,6 +225,20 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String load() {
             return readData();
+        }
+
+        /** Resumo para os widgets da tela inicial: guarda e redesenha todos. */
+        @JavascriptInterface
+        public void updateWidgets(String json) {
+            Widgets.save(MainActivity.this, json);
+            Widgets.updateAll(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public String takeLaunchTarget() {
+            String t = launchTarget;
+            launchTarget = null;
+            return t;
         }
 
         @JavascriptInterface

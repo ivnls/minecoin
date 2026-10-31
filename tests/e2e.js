@@ -224,6 +224,7 @@ async function nativeRun(base) {
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(() => {
     window.__saved = null;
+    window.__target = 'achievements';
     window.__calls = [];
     window.MinecoinNative = {
       load: () => window.__saved,
@@ -233,12 +234,24 @@ async function nativeRun(base) {
       vibrate: () => window.__calls.push('vibrate'),
       setBarColor: c => window.__calls.push('bar:' + c),
       version: () => '9.9.9',
+      updateWidgets: json => { window.__widgets = JSON.parse(json); },
+      takeLaunchTarget: () => { const t = window.__target; window.__target = null; return t; },
     };
   });
   await page.goto(base + '/index.html');
   await page.click('text=Mundo de exemplo');
   await page.waitForSelector('.hero .value');
   await page.waitForTimeout(300);
+  check(await page.locator('.layer .t:text-is("Conquistas")').count() === 1, 'widget de conquistas abre as conquistas');
+  await page.evaluate(() => Minecoin.back());
+  const w = await page.evaluate(() => window.__widgets);
+  check(w && w.net === (await page.locator('.hero .value').innerText()) && w.goal === 5000000 && w.pct === 1,
+    'widgets recebem patrimônio e meta');
+  check(w && /^\d{4}-\d\d$/.test(w.month) && w.income.startsWith('R$') && w.adv.length === w.advTotal && w.advCount > 0,
+    'widgets recebem o mês e as conquistas');
+  await page.evaluate(() => Minecoin.open('summary'));
+  check(await page.locator('#top h1:text-is("Resumo")').count() === 1, 'widget do mês abre o Resumo');
+  await page.evaluate(() => Minecoin.open('home'));
   const saved = await page.evaluate(() => JSON.parse(window.__saved));
   check(saved && saved.accounts.length === 5 && saved.tx.length > 50, 'mundo de exemplo salvo pelo MinecoinNative.save');
   await page.click('#hotbar .hs[aria-label="Ajustes"]');
@@ -260,6 +273,11 @@ async function nativeRun(base) {
   check(await page.evaluate(() => JSON.parse(window.__saved).accounts.length) === 1, 'Minecoin.onImport substitui os dados');
   await page.evaluate(() => Minecoin.onImport('isto não é json'));
   check(await page.locator('.toast:has-text("Arquivo inválido")').count() === 1, 'arquivo inválido é recusado');
+  await page.click('#hotbar .hs[aria-label="Ajustes"]');
+  await page.click('button:has-text("Apagar tudo")');
+  await page.click('.layer.dialog button:has-text("Apagar tudo")');
+  await page.waitForTimeout(500);
+  check(await page.evaluate(() => window.__widgets && window.__widgets.empty === true), 'apagar tudo limpa os widgets');
   await shot(page, '06-native');
   check(errors.length === 0, 'sem erros de JavaScript' + (errors.length ? ': ' + errors.join('; ') : ''));
   await browser.close();

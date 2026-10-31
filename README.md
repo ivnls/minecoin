@@ -34,6 +34,12 @@ texturas, a fonte e os sons do Minecraft, tirados de
   madeira, cada um escolhido separadamente em Ajustes (12 madeiras do jogo ou sem madeira); a barra de status do
   Android acompanha a madeira do topo. Sons do jogo e vibração, que podem ser desligados.
 - **Janelas animadas:** sobem ao abrir e descem ao fechar, nos mesmos passos (respeita "reduzir animações").
+- **Widgets da tela inicial:** patrimônio líquido, barra de XP da meta, quanto entrou e saiu no mês e a grade de
+  conquistas, todos com o fundo do tema escolhido no app. São redimensionáveis e, ao tocar, abrem a tela
+  correspondente. O app manda um resumo ao Android sempre que algo muda e `Widgets.java` desenha cada widget como
+  imagem pixelada, com a mesma fonte e texturas.
+
+  <img src="docs/screenshots/widgets.png" alt="Os quatro widgets nos temas Superfície e Nether" width="520">
 - **Backup** em JSON pelo seletor de arquivos do Android (exportar e importar).
 - **Mundo de exemplo** com 6 meses de dados para conhecer o app.
 
@@ -105,6 +111,7 @@ baús a partir da textura da entidade e gera uma fonte TrueType pixelada a parti
 ```
 app/src/main/
   java/app/minecoin/MainActivity.java      WebView, arquivo de dados, backup, botão Voltar
+  java/app/minecoin/Widgets.java          desenho e atualização dos 4 widgets
   assets/index.html
   assets/css/app.css                      visual do jogo (nine-slices, HUD, barra de atalhos)
   assets/js/store.js                      dados, saldos, patrimônio, mundo de exemplo
@@ -114,6 +121,7 @@ app/src/main/
   assets/js/app.js                        navegação, conquistas, backup, ponte com o Android
 tools/prepare_assets.py                   gera os assets a partir do repositório do Minecraft
 tools/build-apk.sh                        build sem Gradle
+tools/widget_previews.py                  pré-visualizações dos widgets (mesmo desenho de Widgets.java)
 tests/e2e.js                              teste ponta a ponta
 ```
 

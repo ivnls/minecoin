@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Minecoin</string>
+    <string name="widget_net_worth">Patrimônio líquido</string>
+    <string name="widget_goal">Meta (barra de XP)</string>
+    <string name="widget_month">Entrou e saiu no mês</string>
+    <string name="widget_achievements">Conquistas</string>
 </resources>
